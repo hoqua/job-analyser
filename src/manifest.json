@@ -28,5 +28,5 @@
       "matches": []
     }
   ],
-  "permissions": ["storage", "activeTab", "scripting", "tabs", "webRequest"]
+  "permissions": ["storage", "activeTab", "scripting", "tabs", "webRequest", "webNavigation"]
 }

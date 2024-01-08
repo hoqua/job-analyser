@@ -4,7 +4,8 @@ import SetCv from './components/set-cv';
 import JobAnalyzer from './components/job-analyzer';
 
 // @ts-ignore
-import { API_KEY, CV_KEY } from '../Background/const';
+const API_KEY = 'API_KEY'
+const CV_KEY = 'CV_KEY'
 
 export default function Popup() {
   const [apiKey, setApiKey] = useState('');

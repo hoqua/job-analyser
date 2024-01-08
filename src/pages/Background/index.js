@@ -67,6 +67,18 @@ Must do: weirdThings, discrepancies, whatCompanyActuallyDoes - if multiple sente
 \n
 `;
 
+const API_KEY = 'API_KEY'
+const CV_KEY = 'CV_KEY'
+
+// chrome.webNavigation.onHistoryStateUpdated.addListener(handler);
+//
+// async function handler(details) {
+//   console.log('onCompleted', details);
+//   chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+//     chrome.tabs.reload(tabs[0].id);
+//   });
+// }
+
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     main(message, sender, sendResponse).catch((err) => sendResponse(err));
     // return true to indicate that you want to send a response asynchronously
@@ -88,7 +100,7 @@ async function main(message, sender, sendResponse) {
   // const cv = await chrome.storage.local.get([CV_KEY]);
 
   const openai = new OpenAI({
-    apiKey: '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',
+    apiKey: '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',
   });
   const chatCompletion = await openai.chat.completions.create({
     response_format: { type: 'json_object' },
@@ -117,6 +129,11 @@ async function main(message, sender, sendResponse) {
   await chrome.tabs.sendMessage(tabs[0].id, {
     type: 'highlight_text',
     content,
+  });
+
+  chrome.tabs.getSelected(null, function(tab) {
+    var code = 'window.location.reload();';
+    chrome.tabs.executeScript(tab.id, {code: code});
   });
 
   sendResponse(content);
