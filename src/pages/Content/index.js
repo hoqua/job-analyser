@@ -1,4 +1,6 @@
-const siteToSelectorMap = {
+const he = require('he');
+
+const siteToQuerySelectorMap = {
   'www.linkedin.com':
     '#job-details',
 };
@@ -9,10 +11,13 @@ function main(request, sender, sendResponse) {
   console.log('in content', request);
 
   if (request.type === 'get_job_description') {
-    const text = document.querySelector(
+    const htmlString = document.querySelector(
       '#job-details'
-    )?.textContent;
+    )?.innerHTML;
 
+    console.log('htmlString', htmlString)
+    const text = he.decode(htmlString);
+    console.log('text', text.toString())
     sendResponse(text);
   }
 
@@ -32,9 +37,9 @@ function main(request, sender, sendResponse) {
       highlightText(weirdThing, container, 'background-color: red');
     }
 
-    for (const whatCompanyActuallyDoes of request.content.whatCompanyActuallyDoes) {
-      console.log('weirdThing', whatCompanyActuallyDoes);
-      highlightText(whatCompanyActuallyDoes, container, 'background-color: green');
+    for (const companyProfile of request.content.companyProfile) {
+      console.log('weirdThing', companyProfile);
+      highlightText(companyProfile, container, 'background-color: green');
     }
     sendResponse(undefined);
   }
@@ -42,10 +47,12 @@ function main(request, sender, sendResponse) {
 
 function highlightText(textToHighlight, container, highlightStyle) {
   // Get the HTML of the container
-  const html = container.innerHTML;
+  const htmlEncoded = container.innerHTML;
+  const htmlDecoded = he.decode(htmlEncoded);
+  console.log('decoded html', htmlDecoded);
 
   // Update the container's HTML
-  container.innerHTML = html.replace(
+  container.innerHTML = htmlDecoded.replace(
     textToHighlight,
     `<span style="${highlightStyle}">${textToHighlight}</span>`
   );

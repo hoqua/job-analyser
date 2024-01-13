@@ -14,6 +14,7 @@
   "dependencies": {
     "@brianmcallister/highlight-text": "^2.0.4",
     "@perlego/text-highlighter": "^2.1.0-alpha.4",
+    "he": "^1.2.0",
     "openai": "^4.24.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
