@@ -1,6 +1,5 @@
 import OpenAI from 'openai';
 
-
 const cv = `
  Dmitrii Zolotuhin - Senior Full-Stack Developer
 dmitrii.zolotukhin@gmail.com
@@ -71,8 +70,8 @@ Emphasize that all HTML content must be accurately represented in the response.
 
 `;
 
-const API_KEY = 'API_KEY'
-const CV_KEY = 'CV_KEY'
+const API_KEY = 'API_KEY';
+const CV_KEY = 'CV_KEY';
 
 // chrome.webNavigation.onHistoryStateUpdated.addListener(handler);
 //
@@ -84,9 +83,9 @@ const CV_KEY = 'CV_KEY'
 // }
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    main(message, sender, sendResponse).catch((err) => sendResponse(err));
-    // return true to indicate that you want to send a response asynchronously
-    return true;
+  main(message, sender, sendResponse).catch((err) => sendResponse(err));
+  // return true to indicate that you want to send a response asynchronously
+  return true;
 });
 
 async function main(message, sender, sendResponse) {
@@ -106,28 +105,29 @@ async function main(message, sender, sendResponse) {
   const openai = new OpenAI({
     apiKey: '',
   });
-  const chatCompletion = await openai.chat.completions.create({
-    response_format: { type: 'json_object' },
-    messages: [
-      {
-        role: 'system',
-        content: prePrompt,
-      },
-      {
-        role: 'user',
-        content: 'My Cv: \n' + cv,
-      },
-      {
-        role: 'user',
-        content: 'Job description: \n' + result,
-      },
-      {
-        role: 'user',
-        content: 'Instructions: \n' + instructions,
-      },
-    ],
-    model: 'gpt-4-1106-preview',
-  });
+  const chatCompletion = await openai.chat.completions
+    .create({
+      messages: [
+        {
+          role: 'system',
+          content: prePrompt,
+        },
+        {
+          role: 'user',
+          content: 'My Cv: \n' + cv,
+        },
+        {
+          role: 'user',
+          content: 'Job description: \n' + result,
+        },
+        {
+          role: 'user',
+          content: 'Instructions: \n' + instructions,
+        },
+      ],
+      model: 'gpt-4',
+    })
+    .catch((err) => console.log('err', err));
   console.log('chatCompletion', chatCompletion);
   const content = JSON.parse(chatCompletion.choices[0].message.content);
   await chrome.tabs.sendMessage(tabs[0].id, {
