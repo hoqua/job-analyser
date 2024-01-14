@@ -48,27 +48,30 @@ const prePrompt = `
 - today is May (not a December) \n`;
 
 const instructions = `
-Objective: \n
-Analyze the given job description and my CV to identify: \n
+Analyze the provided job description HTML and my CV, focusing especially on retaining all HTML elements and special characters, including comment tags like '\x3C!---->', in your analysis and response.
 
-Discrepancies: Please review the job description and my CV. Highlight any specific skills, experiences, or qualifications explicitly stated as required in the job description that are clearly absent or not mentioned in my CV. Exclude general requirements and do not make assumptions about my experience or proficiency levels based on the information provided.
-Weird Things: Please examine the job description and pinpoint any aspects that could be considered restrictive, inflexible, or potentially discouraging from a developer's perspective.
-What company actually does: Identify what company actually does based on job description.
-Cover Letter: Write a short straight to the point cover letter for the job description.
-\n
-Format for Response should be valid JSON:
+1. Discrepancies: Compare the job description with my CV and identify skills and experiences in the job description that are not in my CV. Return these as an exact HTML substring array, ensuring to include all special characters and comments.
+
+2. Weird Things: Examine the job description for elements that might seem restrictive or discouraging to a developer. Highlight these as an exact HTML substring array, including all special characters and comments.
+
+3. Company Profile: Based on the job description, describe what the company does.
+
+4. Cover Letter: Draft a concise cover letter tailored to the job description.
+
+Provide results in JSON format:
 {
-   "weirdThings": ["MUST BE exact same text in same language from job description"],
-   "discrepancies": ["MUST BE exact same text in same language from job description"]
-   "whatCompanyActuallyDoes": ["MUST BE exact same text in same language from job description"],
-   "coverLetter": "Cover letter text"
+   "weirdThings": [],
+   "discrepancies": [],
+   "companyProfile": [],
+   "coverLetter": ""
 }
-Must do: weirdThings, discrepancies, whatCompanyActuallyDoes - if multiple sentences present those should be separate items of array those must be separated by period 
-\n
+
+Emphasize that all HTML content must be accurately represented in the response.
+
 `;
 
-const API_KEY = 'API_KEY'
-const CV_KEY = 'CV_KEY'
+const API_KEY = 'API_KEY';
+const CV_KEY = 'CV_KEY';
 
 // chrome.webNavigation.onHistoryStateUpdated.addListener(handler);
 //
@@ -80,9 +83,9 @@ const CV_KEY = 'CV_KEY'
 // }
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    main(message, sender, sendResponse).catch((err) => sendResponse(err));
-    // return true to indicate that you want to send a response asynchronously
-    return true;
+  main(message, sender, sendResponse).catch((err) => sendResponse(err));
+  // return true to indicate that you want to send a response asynchronously
+  return true;
 });
 
 async function main(message, sender, sendResponse) {
@@ -100,30 +103,31 @@ async function main(message, sender, sendResponse) {
   // const cv = await chrome.storage.local.get([CV_KEY]);
 
   const openai = new OpenAI({
-    apiKey: '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',
+    apiKey: '',
   });
-  const chatCompletion = await openai.chat.completions.create({
-    response_format: { type: 'json_object' },
-    messages: [
-      {
-        role: 'system',
-        content: prePrompt,
-      },
-      {
-        role: 'user',
-        content: 'My Cv: \n' + cv,
-      },
-      {
-        role: 'user',
-        content: 'Job description: \n' + result,
-      },
-      {
-        role: 'user',
-        content: 'Instructions: \n' + instructions,
-      },
-    ],
-    model: 'gpt-3.5-turbo-1106',
-  });
+  const chatCompletion = await openai.chat.completions
+    .create({
+      messages: [
+        {
+          role: 'system',
+          content: prePrompt,
+        },
+        {
+          role: 'user',
+          content: 'My Cv: \n' + cv,
+        },
+        {
+          role: 'user',
+          content: 'Job description: \n' + result,
+        },
+        {
+          role: 'user',
+          content: 'Instructions: \n' + instructions,
+        },
+      ],
+      model: 'gpt-4',
+    })
+    .catch((err) => console.log('err', err));
   console.log('chatCompletion', chatCompletion);
   const content = JSON.parse(chatCompletion.choices[0].message.content);
   await chrome.tabs.sendMessage(tabs[0].id, {
@@ -131,10 +135,10 @@ async function main(message, sender, sendResponse) {
     content,
   });
 
-  chrome.tabs.getSelected(null, function(tab) {
-    var code = 'window.location.reload();';
-    chrome.tabs.executeScript(tab.id, {code: code});
-  });
+  // chrome.tabs.getSelected(null, function(tab) {
+  //   var code = 'window.location.reload();';
+  //   chrome.tabs.executeScript(tab.id, {code: code});
+  // });
 
   sendResponse(content);
   //
