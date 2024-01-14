@@ -107,7 +107,9 @@ async function main(message, sender, sendResponse) {
   });
   const chatCompletion = await openai.chat.completions
     .create({
-      response_format: { type: 'json_object' },
+      // TODO: ideally model should support JSON format
+      response_format: {type: 'json_object'},
+
       messages: [
         {
           role: 'system',
