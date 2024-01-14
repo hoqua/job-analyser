@@ -22,6 +22,7 @@ function main(request, sender, sendResponse) {
     if (!container) return;
     console.log('content highlight_text request', request);
 
+    // TODO: lets just highlight for now
     //Append company profile to the top of the job description
     const p = document.createElement('p');
     p.style = 'background-color: green';
@@ -59,6 +60,7 @@ function highlightText(textToHighlight, container, highlightStyle) {
     (node) => node.outerHTML.trim() === textToHighlight.trim()
   );
 
+  // TODO: can we do it in for loop in conjunction with the previous filter?
   // For each matching element, create a new div, set its style to highlightStyle,
   // clone the element, append the clone to the div, and replace the element with the div
   textNodes.forEach((textNode) => {
