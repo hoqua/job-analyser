@@ -107,6 +107,7 @@ async function main(message, sender, sendResponse) {
   });
   const chatCompletion = await openai.chat.completions
     .create({
+      response_format: { type: 'json_object' },
       messages: [
         {
           role: 'system',
@@ -125,7 +126,7 @@ async function main(message, sender, sendResponse) {
           content: 'Instructions: \n' + instructions,
         },
       ],
-      model: 'gpt-4',
+      model: 'gpt-3.5-turbo-1106',
     })
     .catch((err) => console.log('err', err));
   console.log('chatCompletion', chatCompletion);
