@@ -29,12 +29,6 @@ function main(request, sender, sendResponse) {
     if (!container) return;
     console.log('content highlight_text request', request);
 
-    //Append company profile to the top of the job description
-    const p = document.createElement('p');
-    p.style = 'background-color: green';
-    p.innerHTML = request.content.companyProfile;
-    container.prepend(p);
-
     //Highlight discrepancies and weird things
     for (const discrepancy of request.content.discrepancies) {
       console.log('discrepancy', discrepancy);
@@ -45,6 +39,11 @@ function main(request, sender, sendResponse) {
     for (const weirdThing of request.content.weirdThings) {
       console.log('weirdThing', weirdThing);
       highlightText(weirdThing, container, 'background-color: red');
+    }
+
+    for (const companyProfile of request.content.companyProfile) {
+      console.log('companyProfile', companyProfile);
+      highlightText(companyProfile, container, 'background-color: green');
     }
 
     sendResponse(undefined);
@@ -61,20 +60,16 @@ function highlightText(textToHighlight, container, highlightStyle) {
   // Parse the sanitized HTML string into a document object
   const doc = parser.parseFromString(decodedHTML, 'text/html');
 
-  // Select all elements in the document whose outerHTML matches textToHighlight
-  const textNodes = [...doc.body.querySelectorAll('*')].filter(
-    (node) => node.outerHTML.trim() === textToHighlight.trim()
-  );
-
-  // For each matching element, create a new div, set its style to highlightStyle,
-  // clone the element, append the clone to the div, and replace the element with the div
-  textNodes.forEach((textNode) => {
-    const div = document.createElement('div');
-    div.style = highlightStyle;
-    const clonedNode = textNode.cloneNode(true);
-    div.appendChild(clonedNode);
-    textNode.replaceWith(div);
-  });
+  // Loop through all the nodes in the document
+  for (const node of [...doc.body.querySelectorAll('*')]) {
+    if (node.outerHTML.trim() === textToHighlight.trim()) {
+      const div = document.createElement('div');
+      div.style = highlightStyle;
+      const clonedNode = node.cloneNode(true);
+      div.appendChild(clonedNode);
+      node.replaceWith(div);
+    }
+  }
 
   // Update the innerHTML of the container with the modified HTML
   container.innerHTML = doc.body.innerHTML;
