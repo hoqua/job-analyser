@@ -95,6 +95,9 @@ async function main(message, sender, sendResponse) {
   console.log('tabs', tabs);
   const result = await chrome.tabs.sendMessage(tabs[0].id, {
     type: 'get_job_description',
+    content: {
+      url: tabs[0].url,
+    },
   });
 
   console.log('job description', result);
@@ -132,7 +135,10 @@ async function main(message, sender, sendResponse) {
   const content = JSON.parse(chatCompletion.choices[0].message.content);
   await chrome.tabs.sendMessage(tabs[0].id, {
     type: 'highlight_text',
-    content,
+    content: {
+      ...content,
+      url: tabs[0].url,
+    },
   });
 
   // chrome.tabs.getSelected(null, function(tab) {

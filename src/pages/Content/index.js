@@ -1,6 +1,7 @@
 const domPurify = require('dompurify');
 const siteToQuerySelectorMap = {
   'www.linkedin.com': '#job-details',
+  'www.indeed.com': '#jobDescriptionText',
 };
 
 chrome.runtime.onMessage.addListener(main);
@@ -8,8 +9,12 @@ chrome.runtime.onMessage.addListener(main);
 function main(request, sender, sendResponse) {
   console.log('in content', request);
 
+  const currentUrl = request.content.url.split('/')[2];
+
   if (request.type === 'get_job_description') {
-    const htmlString = document.querySelector('#job-details')?.innerHTML;
+    const htmlString = document.querySelector(
+      siteToQuerySelectorMap[currentUrl]
+    )?.innerHTML;
 
     console.log('htmlString', htmlString);
     const text = domPurify.sanitize(htmlString);
@@ -18,7 +23,9 @@ function main(request, sender, sendResponse) {
   }
 
   if (request.type === 'highlight_text') {
-    const container = document.querySelector('#job-details');
+    const container = document.querySelector(
+      siteToQuerySelectorMap[currentUrl]
+    );
     if (!container) return;
     console.log('content highlight_text request', request);
 
