@@ -109,6 +109,7 @@ async function main(message, sender, sendResponse) {
     .create({
       // TODO: ideally model should support JSON format
       response_format: {type: 'json_object'},
+
       messages: [
         {
           role: 'system',
