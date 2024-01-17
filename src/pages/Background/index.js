@@ -95,6 +95,9 @@ async function main(message, sender, sendResponse) {
   console.log('tabs', tabs);
   const result = await chrome.tabs.sendMessage(tabs[0].id, {
     type: 'get_job_description',
+    content: {
+      url: tabs[0].url,
+    },
   });
 
   console.log('job description', result);
@@ -107,6 +110,9 @@ async function main(message, sender, sendResponse) {
   });
   const chatCompletion = await openai.chat.completions
     .create({
+      // TODO: ideally model should support JSON format
+      response_format: {type: 'json_object'},
+
       messages: [
         {
           role: 'system',
@@ -125,14 +131,17 @@ async function main(message, sender, sendResponse) {
           content: 'Instructions: \n' + instructions,
         },
       ],
-      model: 'gpt-4',
+      model: 'gpt-3.5-turbo-1106',
     })
     .catch((err) => console.log('err', err));
   console.log('chatCompletion', chatCompletion);
   const content = JSON.parse(chatCompletion.choices[0].message.content);
   await chrome.tabs.sendMessage(tabs[0].id, {
     type: 'highlight_text',
-    content,
+    content: {
+      ...content,
+      url: tabs[0].url,
+    },
   });
 
   // chrome.tabs.getSelected(null, function(tab) {
