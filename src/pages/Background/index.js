@@ -108,10 +108,10 @@ async function main(message, sender, sendResponse) {
   const openai = new OpenAI({
     apiKey: '',
   });
-  const chatCompletion = await openai.chat.completions
+  const stream = await openai.chat.completions
     .create({
       // TODO: ideally model should support JSON format
-      response_format: {type: 'json_object'},
+      response_format: { type: 'json_object' },
 
       messages: [
         {
@@ -132,24 +132,57 @@ async function main(message, sender, sendResponse) {
         },
       ],
       model: 'gpt-3.5-turbo-1106',
+      stream: true,
     })
     .catch((err) => console.log('err', err));
-  console.log('chatCompletion', chatCompletion);
-  const content = JSON.parse(chatCompletion.choices[0].message.content);
-  await chrome.tabs.sendMessage(tabs[0].id, {
-    type: 'highlight_text',
-    content: {
-      ...content,
-      url: tabs[0].url,
-    },
-  });
+
+  let finalContent = '';
+  let processed = {
+    weirdThings: false,
+    discrepancies: false,
+    companyProfile: false,
+    coverLetter: false,
+  };
+
+  for await (const chunk of stream) {
+    const content = chunk.choices[0]?.delta?.content;
+    finalContent += content;
+
+    // Parse the content of the current chunk
+    let parsedChunkContent;
+    try {
+      parsedChunkContent = JSON.parse(finalContent);
+    } catch (err) {
+      console.log('Error parsing chunk content:', err);
+      continue;
+    }
+
+    for (let key in processed) {
+      if (
+        !processed[key] &&
+        parsedChunkContent[key] &&
+        parsedChunkContent[key].length > 0
+      ) {
+        chrome.tabs.sendMessage(tabs[0].id, {
+          type: 'highlight_text',
+          content: {
+            ...parsedChunkContent,
+            url: tabs[0].url,
+          },
+        });
+        processed[key] = true;
+      }
+    }
+  }
+
+  const parsedContent = JSON.parse(finalContent);
 
   // chrome.tabs.getSelected(null, function(tab) {
   //   var code = 'window.location.reload();';
   //   chrome.tabs.executeScript(tab.id, {code: code});
   // });
 
-  sendResponse(content);
+  sendResponse(parsedContent);
   //
   // console.log('making request')
   // const result = await fetch('https://quotes.toscrape.com/random')

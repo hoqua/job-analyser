@@ -30,20 +30,26 @@ function main(request, sender, sendResponse) {
     console.log('content highlight_text request', request);
 
     //Highlight discrepancies and weird things
-    for (const discrepancy of request.content.discrepancies) {
-      console.log('discrepancy', discrepancy);
+    if (request.content.discrepancies) {
+      for (const discrepancy of request.content.discrepancies) {
+        console.log('discrepancy', discrepancy);
 
-      highlightText(discrepancy, container, 'background-color: yellow');
+        highlightText(discrepancy, container, 'background-color: yellow');
+      }
     }
 
-    for (const weirdThing of request.content.weirdThings) {
-      console.log('weirdThing', weirdThing);
-      highlightText(weirdThing, container, 'background-color: red');
+    if (request.content.weirdThing) {
+      for (const weirdThing of request.content.weirdThings) {
+        console.log('weirdThing', weirdThing);
+        highlightText(weirdThing, container, 'background-color: red');
+      }
     }
 
-    for (const companyProfile of request.content.companyProfile) {
-      console.log('companyProfile', companyProfile);
-      highlightText(companyProfile, container, 'background-color: green');
+    if (request.content.companyProfile) {
+      for (const companyProfile of request.content.companyProfile) {
+        console.log('companyProfile', companyProfile);
+        highlightText(companyProfile, container, 'background-color: green');
+      }
     }
 
     sendResponse(undefined);
@@ -62,7 +68,10 @@ function highlightText(textToHighlight, container, highlightStyle) {
 
   // Loop through all the nodes in the document
   for (const node of [...doc.body.querySelectorAll('*')]) {
-    if (node.outerHTML.trim() === textToHighlight.trim()) {
+    if (
+      node.outerHTML.toLowerCase().trim() ===
+      textToHighlight.toLowerCase().trim()
+    ) {
       const div = document.createElement('div');
       div.style = highlightStyle;
       const clonedNode = node.cloneNode(true);
